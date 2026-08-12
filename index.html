@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>물리 영역 보고서 발표 촬영 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -12,162 +12,190 @@
             background-color: #0f172a; /* Tailwind slate-900 */
             color: white;
             margin: 0;
-            overflow: hidden; /* 발표 중 스크롤 방지 */
+            padding: 0;
+            width: 100vw;
+            height: 100dvh; /* Dynamic Viewport Height for mobile/tablet toolbars */
+            overflow: hidden;
+        }
+        /* Custom scrollbar for small tablet screens */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-white antialiased select-none">
 
-    <!-- 초기 설정 화면 (정보 입력 및 슬라이드 링크) -->
-    <div id="setupScreen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-700">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-blue-400 mb-2">⚛️ 물리 영역 보고서 발표 촬영</h1>
-                <p class="text-slate-400 text-sm">정보와 구글 슬라이드 링크를 입력하고 촬영을 준비하세요.</p>
+    <!-- 1. 초기 정보 입력 화면 -->
+    <div id="setupScreen" class="h-[100dvh] w-full flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-700 my-auto">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold text-blue-400 mb-2 flex items-center justify-center gap-2">
+                    <span>⚛️</span> 물리 발표 촬영 시스템
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm">학번, 이름과 구글 슬라이드 링크를 입력해 주세요.</p>
             </div>
 
             <div class="space-y-4">
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-3 gap-2 sm:gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">학년</label>
-                        <input type="number" id="grade" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="예: 2">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">학년</label>
+                        <input type="number" id="grade" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="예: 2">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">반</label>
-                        <input type="number" id="classNum" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="예: 3">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">반</label>
+                        <input type="number" id="classNum" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="예: 3">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">번호</label>
-                        <input type="number" id="studentNum" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="예: 15">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">번호</label>
+                        <input type="number" id="studentNum" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="예: 15">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">이름</label>
-                    <input type="text" id="studentName" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="이름을 입력하세요">
+                    <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">이름</label>
+                    <input type="text" id="studentName" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="이름을 입력하세요">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">구글 슬라이드 보기 링크 (공유 링크)</label>
-                    <input type="url" id="slideUrl" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="https://docs.google.com/presentation/d/.../edit">
-                    <p class="text-xs text-slate-400 mt-1">* 슬라이드 공유 설정에서 '링크가 있는 모든 사용자'가 볼 수 있도록 설정해주세요.</p>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">구글 슬라이드 공유 링크</label>
+                    <input type="url" id="slideUrl" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="https://docs.google.com/presentation/d/.../edit">
+                    <p class="text-[11px] text-slate-400 mt-1">* 슬라이드 공유 설정이 '링크가 있는 모든 사용자'로 되어 있어야 합니다.</p>
                 </div>
 
-                <button onclick="startSetup()" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+                <button onclick="startSetup()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg text-sm sm:text-base">
                     발표 준비 화면으로 이동
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 메인 녹화 화면 (초기에는 숨김) -->
-    <div id="recordingScreen" class="hidden h-screen w-full flex bg-slate-900">
+    <!-- 2. 메인 발표/녹화 화면 (반응형 레이아웃 적용) -->
+    <div id="recordingScreen" class="hidden h-[100dvh] w-full flex flex-col md:flex-row bg-slate-900 overflow-hidden">
         
-        <!-- 왼쪽: 구글 슬라이드 영역 -->
-        <div class="w-3/4 h-full flex flex-col justify-center p-6 relative">
-            <div class="w-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black relative ring-1 ring-slate-700">
-                <iframe id="slideIframe" class="w-full h-full border-0" allowfullscreen></iframe>
+        <!-- 왼쪽/상단: 구글 슬라이드 프리뷰 영역 -->
+        <div class="w-full md:w-2/3 lg:w-3/4 h-1/2 md:h-full flex flex-col justify-between p-3 sm:p-5 relative border-b md:border-b-0 md:border-r border-slate-800">
+            <!-- 슬라이드 Iframe 컨테이너 (16:9 비율 유지) -->
+            <div class="w-full flex-1 flex flex-col justify-center items-center min-h-0">
+                <div class="w-full h-full max-h-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black relative ring-1 ring-slate-700 flex items-center justify-center">
+                    <iframe id="slideIframe" class="w-full h-full border-0" allowfullscreen></iframe>
+                </div>
             </div>
-            <!-- 슬라이드 조작 안내 문구 -->
-            <div class="mt-4 text-center text-slate-400 text-sm flex items-center justify-center gap-2">
-                <span class="text-xl">💡</span>
-                <span>마우스로 슬라이드 하단의 <b>화살표 메뉴</b>를 누르거나, 슬라이드를 한 번 클릭한 후 키보드의 <b>방향키(◀ ▶)</b>를 눌러 페이지를 넘기세요.</span>
+            <!-- 하단 슬라이드 조작 안내 -->
+            <div class="mt-2 text-center text-slate-400 text-xs sm:text-sm flex items-center justify-center gap-1.5 shrink-0 py-1 bg-slate-800/60 rounded-lg">
+                <span class="text-base">💡</span>
+                <span>슬라이드 하단 <b>화살표 메뉴</b>를 누르거나, 슬라이드 클릭 후 키보드 <b>방향키(◀ ▶)</b>로 페이지를 넘기세요.</span>
             </div>
         </div>
 
-        <!-- 오른쪽: 카메라, 타이머, 컨트롤 패널 영역 -->
-        <div class="w-1/4 h-full bg-slate-800 border-l border-slate-700 p-6 flex flex-col justify-between">
+        <!-- 오른쪽/하단: 카메라, 타이머, 컨트롤 패널 (태블릿 대응 스크롤 패널) -->
+        <div class="w-full md:w-1/3 lg:w-1/4 h-1/2 md:h-full bg-slate-800/95 p-3 sm:p-5 flex flex-col justify-between overflow-y-auto custom-scrollbar">
             
-            <!-- 상단: 학생 정보 및 상태 -->
-            <div>
-                <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+            <!-- 상단: 발표자 정보 및 연결 상태 -->
+            <div class="space-y-3">
+                <h2 class="text-lg sm:text-xl font-bold text-blue-400 flex items-center gap-2">
                     <span>⚛️</span> 물리 발표 녹화
                 </h2>
                 
-                <div class="bg-slate-700/50 p-4 rounded-xl mb-6">
-                    <div id="displayStudentInfo" class="text-lg font-medium text-white mb-1">2학년 0반 0번 홍길동</div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <div id="recordingStatusDot" class="w-3 h-3 rounded-full bg-slate-500"></div>
-                        <span id="recordingStatusText" class="text-sm font-medium text-slate-300">대기 중</span>
+                <div class="bg-slate-700/60 p-3 rounded-xl border border-slate-600/50">
+                    <div id="displayStudentInfo" class="text-sm sm:text-base font-medium text-white truncate">2학년 0반 0번 홍길동</div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div id="recordingStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
+                        <span id="recordingStatusText" class="text-xs sm:text-sm font-medium text-slate-300">연결 대기 중</span>
                     </div>
                 </div>
 
-                <!-- 카메라 미리보기 -->
-                <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-inner ring-2 ring-slate-600 mb-6">
-                    <video id="previewCamera" class="w-full h-full object-cover" autoplay muted></video>
+                <!-- 카메라 미리보기 박스 -->
+                <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-inner ring-1 ring-slate-600">
+                    <video id="previewCamera" class="w-full h-full object-cover" autoplay muted playsinline></video>
+                    <div id="noCameraText" class="absolute inset-0 flex items-center justify-center text-xs text-slate-400 p-2 text-center">
+                        카메라를 연결해 주세요
+                    </div>
                 </div>
             </div>
 
             <!-- 중앙: 타이머 -->
-            <div class="flex-1 flex flex-col items-center justify-center py-4">
-                <div id="timerDisplay" class="text-6xl font-bold text-white tracking-widest tabular-nums">
+            <div class="my-3 py-2 flex flex-col items-center justify-center bg-slate-900/40 rounded-xl border border-slate-700/40">
+                <div id="timerDisplay" class="text-4xl sm:text-5xl font-bold text-white tracking-widest tabular-nums">
                     3:00
                 </div>
-                <div id="timerWarning" class="text-red-400 font-medium text-sm mt-2 opacity-0 transition-opacity">
-                    종료가 얼마 남지 않았습니다!
+                <div id="timerWarning" class="text-red-400 font-medium text-xs mt-1 opacity-0 transition-opacity">
+                    남은 시간이 얼마 없습니다!
                 </div>
             </div>
 
-            <!-- 하단: 컨트롤 버튼들 -->
-            <div class="space-y-3">
-                <button id="btnConnect" onclick="requestPermissions()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-xl transition duration-200 shadow-lg">
-                    1. 화면/카메라 연결
+            <!-- 하단: 컨트롤 버튼 모음 (태블릿 터치에 최적화) -->
+            <div class="space-y-2 pt-2">
+                <button id="btnConnect" onclick="requestPermissions()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3 sm:py-3.5 px-3 rounded-xl transition duration-150 shadow-lg text-xs sm:text-sm flex items-center justify-center gap-2">
+                    <span>🎥</span> <span>1. 화면/카메라 연결</span>
                 </button>
-                <button id="btnStart" onclick="startRecording()" disabled class="w-full bg-slate-600 text-slate-300 font-bold py-4 px-4 rounded-xl transition duration-200 cursor-not-allowed">
-                    2. 발표 시작하기 (녹화)
+                <button id="btnStart" onclick="startRecording()" disabled class="w-full bg-slate-700 text-slate-400 font-bold py-3 sm:py-3.5 px-3 rounded-xl transition duration-150 cursor-not-allowed text-xs sm:text-sm flex items-center justify-center gap-2">
+                    <span>▶️</span> <span>2. 발표 시작하기 (녹화)</span>
                 </button>
-                <button id="btnStop" onclick="stopRecording()" class="hidden w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-4 rounded-xl transition duration-200 shadow-lg animate-pulse">
-                    발표 마치기 (저장)
+                <button id="btnStop" onclick="stopRecording()" class="hidden w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-3 sm:py-3.5 px-3 rounded-xl transition duration-150 shadow-lg animate-pulse text-xs sm:text-sm flex items-center justify-center gap-2">
+                    <span>⏹️</span> <span>발표 마치기 (저장)</span>
                 </button>
-                <a id="btnDownload" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-xl transition duration-200 shadow-lg text-center block" download="물리발표영상.webm">
-                    영상 다운로드 받기
+                <a id="btnDownload" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3 sm:py-3.5 px-3 rounded-xl transition duration-150 shadow-lg text-center text-xs sm:text-sm block" download="물리발표영상.webm">
+                    📥 영상 다운로드 받기
                 </a>
-                <p id="finishGuide" class="hidden text-sm text-center text-green-400 mt-2">
-                    다운로드가 완료되었습니다!<br>영상을 구글 클래스룸에 제출해 주세요.
+                <p id="finishGuide" class="hidden text-xs text-center text-emerald-400 mt-1 font-medium">
+                    다운로드가 완료되었습니다!<br>구글 클래스룸에 파일 제출을 부탁드립니다.
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- 백그라운드 스트림 처리 요소들 -->
-    <video id="screenVideo" autoplay muted style="position: fixed; top: -9999px; left: -9999px; width: 1280px; height: 720px; opacity: 0.01;"></video>
-    <video id="cameraVideo" autoplay muted class="hidden"></video>
-    <canvas id="compositeCanvas" width="1280" height="720" class="hidden"></canvas>
+    <!-- 백그라운드 처리용 숨김 요소 (display:none 대신 viewport 밖 배치로 비디오 재생 유지) -->
+    <div style="position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
+        <video id="screenVideo" autoplay muted playsinline></video>
+        <video id="cameraVideo" autoplay muted playsinline></video>
+        <canvas id="compositeCanvas" width="1280" height="720"></canvas>
+    </div>
 
-    <!-- 화면 공유 안내 팝업 -->
-    <div id="shareGuideModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-8 text-slate-800 shadow-2xl">
-            <h3 class="text-2xl font-bold text-blue-600 mb-4 flex items-center gap-2">
-                📺 화면 공유 선택 안내
+    <!-- 화면 공유 안내 팝업 모달 -->
+    <div id="shareGuideModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 text-slate-800 shadow-2xl my-auto">
+            <h3 class="text-xl sm:text-2xl font-bold text-blue-600 mb-3 flex items-center gap-2">
+                📺 화면 공유 방법 안내
             </h3>
             
-            <div id="securityCheckWarning" class="hidden bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 mb-4 rounded-r-lg text-sm">
-                <p class="font-bold">⚠️ 주소 확인 필요</p>
-                <p id="securityCheckText" class="mt-1"></p>
-            </div>
-
-            <p class="mb-4 text-slate-700 text-lg">녹화를 위해 나타나는 공유 창에서 아래 둘 중 하나를 선택해 주세요!</p>
+            <p class="mb-4 text-slate-700 text-sm sm:text-base">
+                [확인했습니다] 버튼을 누른 후 나타나는 브라우저 공유 창에서 아래 방법에 따라 선택해 주세요:
+            </p>
             
-            <div class="bg-slate-100 p-5 rounded-xl mb-6 border border-slate-200 space-y-4">
-                <div class="border-b border-slate-300 pb-3">
-                    <p class="font-bold text-blue-700 text-base mb-1">방법 1. [Chrome 탭] 이용하기 (권장)</p>
-                    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 font-medium">
-                        <li>상단 탭 중 <b>[Chrome 탭]</b> 선택</li>
-                        <li>목록에서 현재 페이지 <b>[물리 영역 보고서 발표 촬영 시스템]</b> 선택</li>
-                        <li>오른쪽 아래 <b>[공유]</b> 버튼 클릭</li>
-                    </ol>
+            <div class="bg-slate-100 p-4 rounded-xl mb-5 border border-slate-200 space-y-3">
+                <div class="border-b border-slate-300 pb-2">
+                    <p class="font-bold text-blue-700 text-sm sm:text-base mb-1">노트북 / PC 사용 시 (권장)</p>
+                    <p class="text-xs sm:text-sm text-slate-600 font-medium">
+                        상단 메뉴 중 <b>[Chrome 탭]</b> 또는 <b>[전체 화면]</b>을 선택하고 화면 목록 클릭 후 오른쪽 아래 <b>[공유]</b> 버튼을 클릭합니다.
+                    </p>
                 </div>
 
                 <div>
-                    <p class="font-bold text-emerald-700 text-base mb-1">방법 2. [Chrome 탭] 목록이 비어있을 때 (학교 PC 보안 정책 등)</p>
-                    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 font-medium">
-                        <li>상단 우측의 <b>[전체 화면]</b> 탭 클릭</li>
-                        <li>화면에 보이는 <b>[화면 1]</b> 그림 클릭</li>
-                        <li>오른쪽 아래 <b>[공유]</b> 버튼 클릭</li>
-                    </ol>
+                    <p class="font-bold text-amber-700 text-sm sm:text-base mb-1">태블릿 (iPad, 갤럭시 탭 등) 사용 시</p>
+                    <p class="text-xs sm:text-sm text-slate-600 font-medium">
+                        모바일/태블릿 브라우저 환경에 따라 화면 공유 팝업 대신 카메라 및 발표 정보 녹화 모드로 자동 전환될 수 있습니다.
+                    </p>
                 </div>
             </div>
             
-            <button onclick="executePermissions()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 rounded-xl transition shadow-md">
-                확인했습니다 (권한 요청 띄우기)
+            <button onclick="executePermissions()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-bold py-3.5 rounded-xl transition shadow-md">
+                확인했습니다 (권한 승인 시작)
+            </button>
+        </div>
+    </div>
+
+    <!-- 맞춤 커스텀 경고/알림 모달 (alert대체) -->
+    <div id="customAlertModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-white shadow-2xl text-center">
+            <div id="customAlertTitle" class="text-xl font-bold text-amber-400 mb-2">⚠️ 알림</div>
+            <div id="customAlertMessage" class="text-sm text-slate-300 mb-6 leading-relaxed whitespace-pre-line">메시지 내용</div>
+            <button onclick="closeCustomAlert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition">
+                확인
             </button>
         </div>
     </div>
@@ -179,6 +207,7 @@
         const slideIframe = document.getElementById('slideIframe');
         
         const previewCamera = document.getElementById('previewCamera');
+        const noCameraText = document.getElementById('noCameraText');
         const screenVideo = document.getElementById('screenVideo');
         const cameraVideo = document.getElementById('cameraVideo');
         const compositeCanvas = document.getElementById('compositeCanvas');
@@ -196,31 +225,43 @@
         const displayStudentInfo = document.getElementById('displayStudentInfo');
         
         const shareGuideModal = document.getElementById('shareGuideModal');
-        const securityCheckWarning = document.getElementById('securityCheckWarning');
-        const securityCheckText = document.getElementById('securityCheckText');
+        const customAlertModal = document.getElementById('customAlertModal');
+        const customAlertTitle = document.getElementById('customAlertTitle');
+        const customAlertMessage = document.getElementById('customAlertMessage');
 
         // 상태 변수
         let studentData = {};
-        let mediaRecorder;
+        let mediaRecorder = null;
         let recordedChunks = [];
         let screenStream = null;
         let cameraStream = null;
         let animationFrameId = null;
         
         let isRecording = false;
-        let timeLeft = 180; // 3분 = 180초
+        let isTabletFallback = false;
+        let timeLeft = 180; // 3분
         let timerInterval = null;
 
-        // 1. 초기 설정
+        // Custom Modal Alert System
+        function showAlert(title, message) {
+            customAlertTitle.textContent = title || "알림";
+            customAlertMessage.textContent = message;
+            customAlertModal.classList.remove('hidden');
+        }
+
+        function closeCustomAlert() {
+            customAlertModal.classList.add('hidden');
+        }
+
         function startSetup() {
-            const grade = document.getElementById('grade').value;
-            const classNum = document.getElementById('classNum').value;
-            const studentNum = document.getElementById('studentNum').value;
-            const name = document.getElementById('studentName').value;
-            const slideUrl = document.getElementById('slideUrl').value;
+            const grade = document.getElementById('grade').value.trim();
+            const classNum = document.getElementById('classNum').value.trim();
+            const studentNum = document.getElementById('studentNum').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            const slideUrl = document.getElementById('slideUrl').value.trim();
 
             if (!grade || !classNum || !studentNum || !name || !slideUrl) {
-                alert("모든 정보와 슬라이드 링크를 입력해주세요.");
+                showAlert("⚠️ 정보 입력 누락", "학년, 반, 번호, 이름 및 구글 슬라이드 링크를 모두 정확히 입력해 주세요.");
                 return;
             }
 
@@ -229,8 +270,10 @@
 
             // 구글 슬라이드 링크 embed 변환
             let embedUrl = slideUrl;
-            if (slideUrl.includes('/edit') || slideUrl.includes('/preview')) {
-                embedUrl = slideUrl.replace(/\/(edit|preview).*$/, '/embed?start=false&loop=false&delayms=3000');
+            if (slideUrl.includes('docs.google.com/presentation')) {
+                embedUrl = slideUrl.replace(/\/(edit|preview|view).*$/, '/embed?start=false&loop=false&delayms=3000');
+            } else if (!slideUrl.startsWith('http')) {
+                embedUrl = 'https://' + slideUrl;
             }
             slideIframe.src = embedUrl;
 
@@ -238,134 +281,120 @@
             recordingScreen.classList.remove('hidden');
         }
 
-        // 2. 권한 안내 팝업
         function requestPermissions() {
             shareGuideModal.classList.remove('hidden');
-            
-            // 보안 프로토콜 체크
-            if (window.location.protocol === 'file:') {
-                securityCheckWarning.classList.remove('hidden');
-                securityCheckText.innerHTML = "현재 <b>file:///</b> 주소로 실행 중입니다. 브라우저 보안 정책상 화면 공유 목록이 비어 보일 수 있습니다. 웹 서버(GitHub Pages)에 올려 사용해 주세요.";
-            } else if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
-                securityCheckWarning.classList.remove('hidden');
-                securityCheckText.innerHTML = "현재 주소가 <b>http://</b> (보안 미적용)입니다. 카메라 사용을 위해 반드시 <b>https://</b> 주소로 접속해야 합니다.";
-            } else {
-                securityCheckWarning.classList.add('hidden');
-            }
         }
 
-        // 3. 권한 실행
         async function executePermissions() {
             shareGuideModal.classList.add('hidden');
 
-            // HTTPS 검사
+            // HTTPS 및 Secure Context 체크
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("🔒 브라우저 보안 오류\n\n카메라/마이크를 사용하려면 웹사이트가 HTTPS(https://)로 접속되어야 합니다.\n주소를 확인해 주세요.");
+                showAlert("🔒 보안 프로토콜 오류", "카메라 사용을 위해 웹사이트가 HTTPS(https://) 주소로 접속되어야 합니다.\n주소창을 확인해 주세요.");
                 return;
             }
 
+            // 1. 카메라 권한 요청
             try {
-                // 카메라 권한
                 cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 1280, height: 720 }, 
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, 
                     audio: true 
                 });
                 
                 previewCamera.srcObject = cameraStream;
                 cameraVideo.srcObject = cameraStream;
-                
+                noCameraText.classList.add('hidden');
             } catch (err) {
-                alert("카메라 및 마이크 접근이 거부되었습니다.\n브라우저 주소창 왼쪽의 자물쇠/설정 아이콘을 눌러 카메라와 마이크 권한을 '허용'으로 변경해 주세요.");
-                console.error("Camera error:", err);
+                console.error("Camera access error:", err);
+                showAlert("📷 카메라 접근 실패", "카메라/마이크 권한이 거부되었습니다.\n브라우저 주소창 좌측의 설정/자물쇠 아이콘을 눌러 권한을 '허용'해 주세요.");
                 return;
             }
 
-            // 화면 공유 권한 요청
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-                    video: true, 
-                    audio: false 
-                });
-            } catch (e) {
-                console.warn("Screen share cancelled:", e);
-                alert("⚠️ 화면 공유가 선택되지 않았습니다.\n\n'화면/카메라 연결' 버튼을 다시 누른 후 [Chrome 탭] 또는 [전체 화면]을 선택하고 [공유]를 눌러주세요.");
-                
-                if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
-                return;
-            }
+            // 2. 화면 공유 요청 (태블릿/모바일 에러 처리 및 Fallback)
+            isTabletFallback = false;
+            let screenShareSuccess = false;
 
-            screenVideo.srcObject = screenStream;
-            
-            // 스트림 종료 감지 (사용자가 공유 중지 클릭 시)
-            screenStream.getVideoTracks()[0].onended = () => {
-                if (isRecording) {
-                    stopRecording();
+            if (navigator.mediaDevices.getDisplayMedia) {
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                        video: { displaySurface: "browser" }, 
+                        audio: false 
+                    });
+                    screenShareSuccess = true;
+                } catch (e) {
+                    console.warn("Screen share cancelled or unsupported on this device:", e);
                 }
-            };
+            }
 
-            screenVideo.play().catch(e => console.log("Screen video play error:", e));
+            if (screenShareSuccess && screenStream) {
+                screenVideo.srcObject = screenStream;
+                screenStream.getVideoTracks()[0].onended = () => {
+                    if (isRecording) stopRecording();
+                };
+                screenVideo.play().catch(err => console.log("Screen video play error:", err));
+            } else {
+                // 태블릿 또는 화면 공유 미지원 기기 모드
+                isTabletFallback = true;
+                showAlert("📱 태블릿/모바일 환경 안내", "화면 공유가 제한된 태블릿 환경이 감지되었습니다.\n카메라 화면 및 학생 정보를 기반으로 발표 녹화가 진행됩니다.");
+            }
 
             // UI 상태 업데이트
-            recordingStatusDot.className = "w-3 h-3 rounded-full bg-green-500";
-            recordingStatusText.textContent = "촬영 준비 완료";
+            recordingStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            recordingStatusText.textContent = isTabletFallback ? "촬영 준비 완료 (태블릿 모드)" : "촬영 준비 완료";
             btnConnect.classList.add('hidden');
             
             btnStart.disabled = false;
-            btnStart.classList.remove('bg-slate-600', 'text-slate-300', 'cursor-not-allowed');
-            btnStart.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-lg');
+            btnStart.classList.remove('bg-slate-700', 'text-slate-400', 'cursor-not-allowed');
+            btnStart.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'active:bg-emerald-800', 'text-white', 'shadow-lg');
 
-            // 믹싱 시작
+            // 캔버스 믹싱 프레임 루프 시작
             startMixing();
         }
 
-        // 4. 비디오 스트림 캔버스 합성
         function mixStreams() {
             const ctx = compositeCanvas.getContext('2d');
             
-            // 배경
+            // 캔버스 기본 배경
             ctx.fillStyle = '#0f172a'; // slate-900
             ctx.fillRect(0, 0, 1280, 720);
 
-            // [왼쪽 영역 960x720] 화면 공유 비디오 그린
-            if (screenVideo.readyState >= 2 && screenVideo.videoWidth > 0) {
+            if (!isTabletFallback && screenVideo.readyState >= 2 && screenVideo.videoWidth > 0) {
+                // [일반 PC/노트북 모드] 화면 공유 스트림 랜더링 (왼쪽 960x720)
                 const sWidth = screenVideo.videoWidth;
                 const sHeight = screenVideo.videoHeight;
                 
-                // 전체 화면이나 탭 공유 모두 960x720 영역 안에서 비율 유지하여 맞춤
-                const targetW = 960;
-                const targetH = 720;
-                
-                // 만약 Chrome 탭으로 현재 앱을 캡처한 것이라면 오른쪽 조작부 제외한 슬라이드 부분만 자르기
-                if (sWidth / sHeight > 1.6) {
-                    // 비율에 따라 유연하게 랜더링
-                    const scale = Math.min(targetW / sWidth, targetH / sHeight);
-                    const drawW = sWidth * scale;
-                    const drawH = sHeight * scale;
-                    const drawX = (targetW - drawW) / 2;
-                    const drawY = (targetH - drawH) / 2;
-                    ctx.drawImage(screenVideo, 0, 0, sWidth, sHeight, drawX, drawY, drawW, drawH);
-                } else {
-                    ctx.drawImage(screenVideo, 0, 0, sWidth, sHeight, 0, 0, 960, 720);
+                // 오른쪽 25% 컨트롤 영역을 제외한 슬라이드 주요 영역 크롭
+                let cropW = sWidth;
+                if (sWidth / sHeight > 1.5) {
+                    cropW = sWidth * 0.75;
                 }
+
+                ctx.drawImage(screenVideo, 0, 0, cropW, sHeight, 0, 0, 960, 720);
             } else {
+                // [태블릿 Fallback 모드] 슬라이드 안내 박스 랜더링
                 ctx.fillStyle = '#1e293b';
-                ctx.fillRect(0, 0, 960, 720);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '20px "Noto Sans KR"';
+                ctx.fillRect(20, 20, 920, 680);
+                
+                ctx.fillStyle = '#60a5fa';
+                ctx.font = 'bold 32px "Noto Sans KR"';
                 ctx.textAlign = 'center';
-                ctx.fillText('슬라이드 화면 연결 중...', 480, 360);
+                ctx.fillText('⚛️ 물리 영역 보고서 발표', 480, 320);
+                
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '22px "Noto Sans KR"';
+                ctx.fillText('구글 슬라이드를 보며 우측 카메라를 보고 발표하세요', 480, 380);
             }
             
-            // 경계선
+            // 구분 세로선
             ctx.fillStyle = '#334155';
             ctx.fillRect(960, 0, 2, 720);
 
-            // [오른쪽 상단 영역] 카메라
+            // [오른쪽 상단] 카메라 스트림 랜더링
             if (cameraVideo.readyState >= 2) {
                 const camX = 980;
                 const camY = 40;
                 const camW = 280;
-                const camH = 157;
+                const camH = 210;
                 
                 ctx.save();
                 ctx.beginPath();
@@ -384,24 +413,24 @@
                     ctx.arc(camX + 20, camY + 20, 6, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.fillStyle = 'white';
-                    ctx.font = '14px "Noto Sans KR"';
+                    ctx.font = 'bold 14px "Noto Sans KR"';
                     ctx.textAlign = 'left';
-                    ctx.fillText('REC', camX + 35, camY + 25);
+                    ctx.fillText('REC', camX + 32, camY + 25);
                 }
             }
 
-            // [오른쪽 하단 영역] 학생 정보
+            // [오른쪽 하단] 학생 정보 표시
             ctx.fillStyle = '#60a5fa';
-            ctx.font = 'bold 24px "Noto Sans KR"';
+            ctx.font = 'bold 22px "Noto Sans KR"';
             ctx.textAlign = 'center';
-            ctx.fillText('물리 영역 보고서 발표', 1120, 300);
+            ctx.fillText('물리 영역 보고서 발표', 1120, 330);
             
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 28px "Noto Sans KR"';
-            ctx.fillText(`${studentData.grade}학년 ${studentData.classNum}반 ${studentData.studentNum}번`, 1120, 360);
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 26px "Noto Sans KR"';
+            ctx.fillText(`${studentData.grade || ''}학년 ${studentData.classNum || ''}반 ${studentData.studentNum || ''}번`, 1120, 390);
             
-            ctx.font = 'bold 40px "Noto Sans KR"';
-            ctx.fillText(studentData.name, 1120, 420);
+            ctx.font = 'bold 36px "Noto Sans KR"';
+            ctx.fillText(studentData.name || '', 1120, 450);
 
             animationFrameId = requestAnimationFrame(mixStreams);
         }
@@ -412,10 +441,9 @@
             }
         }
 
-        // 5. 녹화 시작
         function startRecording() {
-            if (!screenStream || !cameraStream) {
-                alert("화면 및 카메라 연결이 완료되지 않았습니다.");
+            if (!cameraStream) {
+                showAlert("⚠️ 연결 필요", "카메라 연결이 완료되지 않았습니다.");
                 return;
             }
 
@@ -424,18 +452,29 @@
             
             const canvasStream = compositeCanvas.captureStream(30);
             
+            // 오디오 트랙 믹싱
             if (cameraStream.getAudioTracks().length > 0) {
                 canvasStream.addTrack(cameraStream.getAudioTracks()[0]);
             }
 
+            const options = [
+                { mimeType: 'video/webm; codecs=vp9' },
+                { mimeType: 'video/webm; codecs=vp8' },
+                { mimeType: 'video/webm' },
+                { mimeType: 'video/mp4' }
+            ];
+
+            let selectedOption = options.find(opt => MediaRecorder.isTypeSupported(opt.mimeType));
+
             try {
-                mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm; codecs=vp9' });
+                mediaRecorder = selectedOption ? new MediaRecorder(canvasStream, selectedOption) : new MediaRecorder(canvasStream);
             } catch (e) {
-                mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
+                console.error("MediaRecorder creation error:", e);
+                mediaRecorder = new MediaRecorder(canvasStream);
             }
 
             mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) recordedChunks.push(event.data);
+                if (event.data && event.data.size > 0) recordedChunks.push(event.data);
             };
 
             mediaRecorder.onstop = createDownloadLink;
@@ -443,14 +482,14 @@
 
             btnStart.classList.add('hidden');
             btnStop.classList.remove('hidden');
-            recordingStatusDot.className = "w-3 h-3 rounded-full bg-red-500 animate-pulse";
+            recordingStatusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
             recordingStatusText.textContent = "녹화 진행 중...";
             
             startTimer();
         }
 
-        // 6. 타이머
         function startTimer() {
+            timeLeft = 180;
             timerInterval = setInterval(() => {
                 timeLeft--;
                 
@@ -470,7 +509,6 @@
             }, 1000);
         }
 
-        // 7. 녹화 종료
         function stopRecording() {
             if (!isRecording) return;
             
@@ -482,8 +520,8 @@
             }
             
             btnStop.classList.add('hidden');
-            recordingStatusDot.className = "w-3 h-3 rounded-full bg-slate-500";
-            recordingStatusText.textContent = "녹화 종료됨";
+            recordingStatusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-500";
+            recordingStatusText.textContent = "녹화 완료됨";
             timerDisplay.textContent = "0:00";
             timerDisplay.classList.remove('animate-pulse', 'text-red-500');
             timerWarning.classList.add('opacity-0');
@@ -493,12 +531,13 @@
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
         }
 
-        // 8. 다운로드 생성
         function createDownloadLink() {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const mimeType = mediaRecorder ? mediaRecorder.mimeType : 'video/webm';
+            const blob = new Blob(recordedChunks, { type: mimeType });
             const url = URL.createObjectURL(blob);
             
-            const fileName = `물리발표_${studentData.grade}학년${studentData.classNum}반${studentData.studentNum}번_${studentData.name}.webm`;
+            const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+            const fileName = `물리발표_${studentData.grade || 0}학년${studentData.classNum || 0}반${studentData.studentNum || 0}번_${studentData.name || '학생'}.${ext}`;
             
             btnDownload.href = url;
             btnDownload.download = fileName;
