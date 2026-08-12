@@ -12,7 +12,7 @@
             background-color: #0f172a; /* Tailwind slate-900 */
             color: white;
             margin: 0;
-            overflow: hidden; /* Prevent scrolling during presentation */
+            overflow: hidden; /* 발표 중 스크롤 방지 */
         }
     </style>
 </head>
@@ -20,7 +20,7 @@
 
     <!-- 초기 설정 화면 (정보 입력 및 슬라이드 링크) -->
     <div id="setupScreen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-xl">
+        <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-700">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-blue-400 mb-2">⚛️ 물리 영역 보고서 발표 촬영</h1>
                 <p class="text-slate-400 text-sm">정보와 구글 슬라이드 링크를 입력하고 촬영을 준비하세요.</p>
@@ -127,42 +127,53 @@
         </div>
     </div>
 
-    <!-- 보이지 않는 백그라운드 요소들 (실제 녹화 합성용) -->
-    <!-- 화면 공유 비디오 (브라우저 최적화로 인해 까맣게 나오는 것을 방지하기 위해 화면 밖으로 밀어냄) -->
-    <video id="screenVideo" autoplay muted style="position: fixed; top: -9999px; left: -9999px; width: 1280px; height: 720px;"></video>
+    <!-- 백그라운드 스트림 처리 요소들 -->
+    <video id="screenVideo" autoplay muted style="position: fixed; top: -9999px; left: -9999px; width: 1280px; height: 720px; opacity: 0.01;"></video>
     <video id="cameraVideo" autoplay muted class="hidden"></video>
-    
-    <!-- 녹화 합성용 캔버스 (HD 해상도) -->
     <canvas id="compositeCanvas" width="1280" height="720" class="hidden"></canvas>
 
     <!-- 화면 공유 안내 팝업 -->
     <div id="shareGuideModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-8 text-slate-800">
-            <h3 class="text-2xl font-bold text-blue-600 mb-4">📺 화면 공유 방법 안내</h3>
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-8 text-slate-800 shadow-2xl">
+            <h3 class="text-2xl font-bold text-blue-600 mb-4 flex items-center gap-2">
+                📺 화면 공유 선택 안내
+            </h3>
             
-            <div id="fileProtocolWarning" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg">
-                <p class="font-bold">⚠️ 경고: 로컬 파일로 실행 중입니다!</p>
-                <p class="text-sm mt-1">현재 주소가 <b>file:///</b> 로 시작합니다. 브라우저 보안 정책상 화면 공유 탭 목록이 나타나지 않을 수 있습니다. 웹 서버에 올려서 사용하거나(예: GitHub Pages), 로컬 웹 서버(Live Server 등)를 통해 실행해 주세요.</p>
+            <div id="securityCheckWarning" class="hidden bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 mb-4 rounded-r-lg text-sm">
+                <p class="font-bold">⚠️ 주소 확인 필요</p>
+                <p id="securityCheckText" class="mt-1"></p>
             </div>
 
-            <p class="mb-4 text-lg">성공적인 녹화를 위해 다음 순서대로 클릭해 주세요!</p>
+            <p class="mb-4 text-slate-700 text-lg">녹화를 위해 나타나는 공유 창에서 아래 둘 중 하나를 선택해 주세요!</p>
             
-            <div class="bg-slate-100 p-4 rounded-lg mb-6 border border-slate-200">
-                <ol class="list-decimal list-inside space-y-3 font-medium text-slate-700">
-                    <li>팝업창 위쪽 탭에서 <b>[Chrome 탭]</b>을 선택합니다.</li>
-                    <li>목록에서 현재 실행 중인 <b>[물리 영역 보고서 발표 촬영 시스템]</b>을 클릭합니다.</li>
-                    <li>오른쪽 아래 파란색 <b>[공유]</b> 버튼을 누릅니다.</li>
-                </ol>
+            <div class="bg-slate-100 p-5 rounded-xl mb-6 border border-slate-200 space-y-4">
+                <div class="border-b border-slate-300 pb-3">
+                    <p class="font-bold text-blue-700 text-base mb-1">방법 1. [Chrome 탭] 이용하기 (권장)</p>
+                    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 font-medium">
+                        <li>상단 탭 중 <b>[Chrome 탭]</b> 선택</li>
+                        <li>목록에서 현재 페이지 <b>[물리 영역 보고서 발표 촬영 시스템]</b> 선택</li>
+                        <li>오른쪽 아래 <b>[공유]</b> 버튼 클릭</li>
+                    </ol>
+                </div>
+
+                <div>
+                    <p class="font-bold text-emerald-700 text-base mb-1">방법 2. [Chrome 탭] 목록이 비어있을 때 (학교 PC 보안 정책 등)</p>
+                    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 font-medium">
+                        <li>상단 우측의 <b>[전체 화면]</b> 탭 클릭</li>
+                        <li>화면에 보이는 <b>[화면 1]</b> 그림 클릭</li>
+                        <li>오른쪽 아래 <b>[공유]</b> 버튼 클릭</li>
+                    </ol>
+                </div>
             </div>
             
-            <button onclick="executePermissions()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 rounded-xl transition">
+            <button onclick="executePermissions()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 rounded-xl transition shadow-md">
                 확인했습니다 (권한 요청 띄우기)
             </button>
         </div>
     </div>
 
     <script>
-        // DOM 요소 캐싱
+        // DOM 캐싱
         const setupScreen = document.getElementById('setupScreen');
         const recordingScreen = document.getElementById('recordingScreen');
         const slideIframe = document.getElementById('slideIframe');
@@ -185,20 +196,22 @@
         const displayStudentInfo = document.getElementById('displayStudentInfo');
         
         const shareGuideModal = document.getElementById('shareGuideModal');
+        const securityCheckWarning = document.getElementById('securityCheckWarning');
+        const securityCheckText = document.getElementById('securityCheckText');
 
         // 상태 변수
         let studentData = {};
         let mediaRecorder;
         let recordedChunks = [];
-        let screenStream;
-        let cameraStream;
-        let animationFrameId;
+        let screenStream = null;
+        let cameraStream = null;
+        let animationFrameId = null;
         
         let isRecording = false;
         let timeLeft = 180; // 3분 = 180초
-        let timerInterval;
+        let timerInterval = null;
 
-        // 1. 초기 설정 완료 및 녹화 화면으로 이동
+        // 1. 초기 설정
         function startSetup() {
             const grade = document.getElementById('grade').value;
             const classNum = document.getElementById('classNum').value;
@@ -214,7 +227,7 @@
             studentData = { grade, classNum, studentNum, name };
             displayStudentInfo.textContent = `${grade}학년 ${classNum}반 ${studentNum}번 ${name}`;
 
-            // 구글 슬라이드 링크를 embed 용으로 변환 (컨트롤러 포함)
+            // 구글 슬라이드 링크 embed 변환
             let embedUrl = slideUrl;
             if (slideUrl.includes('/edit') || slideUrl.includes('/preview')) {
                 embedUrl = slideUrl.replace(/\/(edit|preview).*$/, '/embed?start=false&loop=false&delayms=3000');
@@ -225,148 +238,163 @@
             recordingScreen.classList.remove('hidden');
         }
 
-        // 2. 권한 요청 안내창 띄우기
+        // 2. 권한 안내 팝업
         function requestPermissions() {
             shareGuideModal.classList.remove('hidden');
             
-            // Check if running from file:// protocol and show warning
+            // 보안 프로토콜 체크
             if (window.location.protocol === 'file:') {
-                document.getElementById('fileProtocolWarning').classList.remove('hidden');
+                securityCheckWarning.classList.remove('hidden');
+                securityCheckText.innerHTML = "현재 <b>file:///</b> 주소로 실행 중입니다. 브라우저 보안 정책상 화면 공유 목록이 비어 보일 수 있습니다. 웹 서버(GitHub Pages)에 올려 사용해 주세요.";
+            } else if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+                securityCheckWarning.classList.remove('hidden');
+                securityCheckText.innerHTML = "현재 주소가 <b>http://</b> (보안 미적용)입니다. 카메라 사용을 위해 반드시 <b>https://</b> 주소로 접속해야 합니다.";
+            } else {
+                securityCheckWarning.classList.add('hidden');
             }
         }
 
-        // 3. 실제 카메라 및 화면 공유 권한 요청
+        // 3. 권한 실행
         async function executePermissions() {
             shareGuideModal.classList.add('hidden');
-            
+
+            // HTTPS 검사
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("🔒 브라우저 보안 오류\n\n카메라/마이크를 사용하려면 웹사이트가 HTTPS(https://)로 접속되어야 합니다.\n주소를 확인해 주세요.");
+                return;
+            }
+
             try {
-                // 카메라 및 마이크 권한
+                // 카메라 권한
                 cameraStream = await navigator.mediaDevices.getUserMedia({ 
                     video: { width: 1280, height: 720 }, 
                     audio: true 
                 });
                 
-                // 화면 미리보기 및 숨겨진 비디오에 연결
                 previewCamera.srcObject = cameraStream;
                 cameraVideo.srcObject = cameraStream;
                 
-                // 화면 공유 권한 (현재 탭 선호 옵션 추가)
-                try {
-                    screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-                        video: { preferCurrentTab: true }, 
-                        audio: false 
-                    });
-                } catch (e) {
-                    console.log("화면 공유 거부됨, 예외 처리 진행");
-                    // 화면 공유가 취소되거나 막힌 경우 검은색 더미 스트림 생성 (미리보기 오류 방지용)
-                    const mockCanvas = document.createElement('canvas');
-                    mockCanvas.width = 1280; mockCanvas.height = 720;
-                    const mCtx = mockCanvas.getContext('2d');
-                    
-                    const drawMock = () => {
-                        mCtx.fillStyle = '#1e293b';
-                        mCtx.fillRect(0, 0, 1280, 720);
-                        mCtx.fillStyle = '#94a3b8';
-                        mCtx.font = '24px "Noto Sans KR", sans-serif';
-                        mCtx.textAlign = 'center';
-                        mCtx.fillText('화면 공유 권한이 취소되었습니다. 실제 환경에서 테스트하세요.', 640, 360);
-                        requestAnimationFrame(drawMock);
-                    };
-                    drawMock();
-                    screenStream = mockCanvas.captureStream(30);
-                }
-                
-                screenVideo.srcObject = screenStream;
-                
-                // 비디오가 화면 밖에 있어도 강제로 재생되도록 처리 (중요: 까만 화면 방지)
-                screenVideo.play().catch(e => console.log("Screen video play error:", e));
-
-                // UI 상태 업데이트
-                recordingStatusDot.className = "w-3 h-3 rounded-full bg-green-500";
-                recordingStatusText.textContent = "촬영 준비 완료";
-                btnConnect.classList.add('hidden');
-                
-                btnStart.disabled = false;
-                btnStart.classList.remove('bg-slate-600', 'text-slate-300', 'cursor-not-allowed');
-                btnStart.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-lg');
-
-                // 합성 루프 시작
-                startMixing();
-
             } catch (err) {
-                alert("권한을 가져오는데 실패했습니다. 카메라/마이크 접근을 허용해주세요.\n에러: " + err.message);
-                console.error(err);
-            }
-        }
-
-        // 4. 비디오 스트림 캔버스 합성 함수 (Split View 녹화용)
-        function mixStreams() {
-            if (!isRecording) {
-                animationFrameId = requestAnimationFrame(mixStreams);
+                alert("카메라 및 마이크 접근이 거부되었습니다.\n브라우저 주소창 왼쪽의 자물쇠/설정 아이콘을 눌러 카메라와 마이크 권한을 '허용'으로 변경해 주세요.");
+                console.error("Camera error:", err);
                 return;
             }
+
+            // 화면 공유 권한 요청
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: true, 
+                    audio: false 
+                });
+            } catch (e) {
+                console.warn("Screen share cancelled:", e);
+                alert("⚠️ 화면 공유가 선택되지 않았습니다.\n\n'화면/카메라 연결' 버튼을 다시 누른 후 [Chrome 탭] 또는 [전체 화면]을 선택하고 [공유]를 눌러주세요.");
+                
+                if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+                return;
+            }
+
+            screenVideo.srcObject = screenStream;
             
+            // 스트림 종료 감지 (사용자가 공유 중지 클릭 시)
+            screenStream.getVideoTracks()[0].onended = () => {
+                if (isRecording) {
+                    stopRecording();
+                }
+            };
+
+            screenVideo.play().catch(e => console.log("Screen video play error:", e));
+
+            // UI 상태 업데이트
+            recordingStatusDot.className = "w-3 h-3 rounded-full bg-green-500";
+            recordingStatusText.textContent = "촬영 준비 완료";
+            btnConnect.classList.add('hidden');
+            
+            btnStart.disabled = false;
+            btnStart.classList.remove('bg-slate-600', 'text-slate-300', 'cursor-not-allowed');
+            btnStart.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-lg');
+
+            // 믹싱 시작
+            startMixing();
+        }
+
+        // 4. 비디오 스트림 캔버스 합성
+        function mixStreams() {
             const ctx = compositeCanvas.getContext('2d');
             
-            // 캔버스 전체 크기: 1280 x 720
-            // 왼쪽(슬라이드 영역): 960 x 720
-            // 오른쪽(카메라 및 정보): 320 x 720
-            
-            // 배경색 채우기
-            ctx.fillStyle = '#0f172a'; // bg-slate-900
+            // 배경
+            ctx.fillStyle = '#0f172a'; // slate-900
             ctx.fillRect(0, 0, 1280, 720);
 
-            // [왼쪽 영역] 화면 공유 비디오(슬라이드) 그리기
+            // [왼쪽 영역 960x720] 화면 공유 비디오 그린
             if (screenVideo.readyState >= 2 && screenVideo.videoWidth > 0) {
-                // 전체 탭(1280x720 비율이라고 가정)이 캡처되므로, 우측 25%의 패널 영역을 잘라냅니다(Crop).
-                // 원본 소스에서 자를 너비 (75%)
-                const srcCropWidth = screenVideo.videoWidth * 0.75;
-                const srcCropHeight = screenVideo.videoHeight;
+                const sWidth = screenVideo.videoWidth;
+                const sHeight = screenVideo.videoHeight;
                 
-                // 캔버스의 왼쪽 960x720 영역에 크롭한 화면을 꽉 차게 그립니다.
-                ctx.drawImage(screenVideo, 0, 0, srcCropWidth, srcCropHeight, 0, 0, 960, 720);
+                // 전체 화면이나 탭 공유 모두 960x720 영역 안에서 비율 유지하여 맞춤
+                const targetW = 960;
+                const targetH = 720;
+                
+                // 만약 Chrome 탭으로 현재 앱을 캡처한 것이라면 오른쪽 조작부 제외한 슬라이드 부분만 자르기
+                if (sWidth / sHeight > 1.6) {
+                    // 비율에 따라 유연하게 랜더링
+                    const scale = Math.min(targetW / sWidth, targetH / sHeight);
+                    const drawW = sWidth * scale;
+                    const drawH = sHeight * scale;
+                    const drawX = (targetW - drawW) / 2;
+                    const drawY = (targetH - drawH) / 2;
+                    ctx.drawImage(screenVideo, 0, 0, sWidth, sHeight, drawX, drawY, drawW, drawH);
+                } else {
+                    ctx.drawImage(screenVideo, 0, 0, sWidth, sHeight, 0, 0, 960, 720);
+                }
+            } else {
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, 0, 960, 720);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '20px "Noto Sans KR"';
+                ctx.textAlign = 'center';
+                ctx.fillText('슬라이드 화면 연결 중...', 480, 360);
             }
             
-            // [경계선] 구분을 위한 선 그리기
-            ctx.fillStyle = '#334155'; // bg-slate-700
-            ctx.fillRect(960, 0, 1, 720);
+            // 경계선
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(960, 0, 2, 720);
 
-            // [오른쪽 상단 영역] 카메라 영상 (우측 패널 상단에 위치)
+            // [오른쪽 상단 영역] 카메라
             if (cameraVideo.readyState >= 2) {
-                // 카메라 크기 및 위치 (우측 패널의 적당한 여백 유지)
-                const camX = 980; // 960 + 20 여백
+                const camX = 980;
                 const camY = 40;
                 const camW = 280;
-                const camH = 157; // 16:9 비율
+                const camH = 157;
                 
                 ctx.save();
                 ctx.beginPath();
-                ctx.roundRect(camX, camY, camW, camH, 12); // 모서리 둥글게
+                ctx.roundRect(camX, camY, camW, camH, 12);
                 ctx.clip();
                 ctx.drawImage(cameraVideo, camX, camY, camW, camH);
                 
-                // 카메라 테두리
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = '#475569';
                 ctx.stroke();
                 ctx.restore();
                 
-                // "녹화 중" 표시
-                ctx.fillStyle = '#ef4444'; // red-500
-                ctx.beginPath();
-                ctx.arc(camX + 20, camY + 20, 6, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = 'white';
-                ctx.font = '14px "Noto Sans KR"';
-                ctx.textAlign = 'left';
-                ctx.fillText('REC', camX + 35, camY + 25);
+                if (isRecording) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(camX + 20, camY + 20, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'white';
+                    ctx.font = '14px "Noto Sans KR"';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('REC', camX + 35, camY + 25);
+                }
             }
 
-            // [오른쪽 하단 영역] 학생 정보 텍스트 삽입
-            ctx.fillStyle = '#60a5fa'; // blue-400
+            // [오른쪽 하단 영역] 학생 정보
+            ctx.fillStyle = '#60a5fa';
             ctx.font = 'bold 24px "Noto Sans KR"';
             ctx.textAlign = 'center';
-            ctx.fillText('물리 영역 보고서 발표', 1120, 300); // 우측 패널 중앙(960+160)
+            ctx.fillText('물리 영역 보고서 발표', 1120, 300);
             
             ctx.fillStyle = 'white';
             ctx.font = 'bold 28px "Noto Sans KR"';
@@ -379,23 +407,27 @@
         }
 
         function startMixing() {
-            mixStreams();
+            if (!animationFrameId) {
+                mixStreams();
+            }
         }
 
         // 5. 녹화 시작
         function startRecording() {
+            if (!screenStream || !cameraStream) {
+                alert("화면 및 카메라 연결이 완료되지 않았습니다.");
+                return;
+            }
+
             isRecording = true;
             recordedChunks = [];
             
-            // 캔버스 비디오 스트림 캡처 (30프레임)
             const canvasStream = compositeCanvas.captureStream(30);
             
-            // 카메라 마이크 오디오 트랙을 캔버스 스트림에 추가
             if (cameraStream.getAudioTracks().length > 0) {
                 canvasStream.addTrack(cameraStream.getAudioTracks()[0]);
             }
 
-            // MediaRecorder 초기화
             try {
                 mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm; codecs=vp9' });
             } catch (e) {
@@ -407,20 +439,17 @@
             };
 
             mediaRecorder.onstop = createDownloadLink;
-            
-            mediaRecorder.start(1000); // 1초마다 데이터 청크 생성
+            mediaRecorder.start(1000);
 
-            // UI 변경
             btnStart.classList.add('hidden');
             btnStop.classList.remove('hidden');
             recordingStatusDot.className = "w-3 h-3 rounded-full bg-red-500 animate-pulse";
             recordingStatusText.textContent = "녹화 진행 중...";
             
-            // 타이머 시작
             startTimer();
         }
 
-        // 6. 타이머 로직
+        // 6. 타이머
         function startTimer() {
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -429,14 +458,12 @@
                 const seconds = timeLeft % 60;
                 timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-                // 30초 전 경고
                 if (timeLeft <= 30) {
                     timerDisplay.classList.add('text-red-500');
                     timerWarning.classList.remove('opacity-0');
                     timerWarning.classList.add('animate-pulse');
                 }
 
-                // 3분 종료 시 자동 스탑
                 if (timeLeft <= 0) {
                     stopRecording();
                 }
@@ -449,9 +476,11 @@
             
             isRecording = false;
             clearInterval(timerInterval);
-            mediaRecorder.stop();
             
-            // UI 업데이트
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            
             btnStop.classList.add('hidden');
             recordingStatusDot.className = "w-3 h-3 rounded-full bg-slate-500";
             recordingStatusText.textContent = "녹화 종료됨";
@@ -459,18 +488,16 @@
             timerDisplay.classList.remove('animate-pulse', 'text-red-500');
             timerWarning.classList.add('opacity-0');
             
-            // 화면 공유 및 카메라 스트림 정지
             if (screenStream) screenStream.getTracks().forEach(track => track.stop());
             if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
-            cancelAnimationFrame(animationFrameId);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
         }
 
-        // 8. 다운로드 링크 생성
+        // 8. 다운로드 생성
         function createDownloadLink() {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
             const url = URL.createObjectURL(blob);
             
-            // 파일명 설정
             const fileName = `물리발표_${studentData.grade}학년${studentData.classNum}반${studentData.studentNum}번_${studentData.name}.webm`;
             
             btnDownload.href = url;
