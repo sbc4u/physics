@@ -170,7 +170,8 @@
                 <div class="border-b border-slate-300 pb-2">
                     <p class="font-bold text-blue-700 text-sm sm:text-base mb-1">1단계: Chrome 탭 선택</p>
                     <p class="text-xs sm:text-sm text-slate-600 font-medium">
-                        상단 메뉴 중 <b>[Chrome 탭]</b>을 누르고, 목록에서 현재 이 페이지인 <b>[물리 영역 보고서 발표 촬영 시스템]</b>을 선택합니다.
+                        상단 메뉴 중 <b>[Chrome 탭]</b>을 누르고, 목록에서 현재 이 페이지인 <b>[물리 영역 보고서 발표 촬영 시스템]</b>을 선택합니다.<br>
+                        <span class="text-red-500">(만약 탭이 안 보인다면 상단의 [전체 화면]을 누르고 화면1을 선택해 주세요)</span>
                     </p>
                 </div>
 
@@ -189,11 +190,13 @@
     </div>
 
     <!-- 맞춤 커스텀 경고/알림 모달 -->
-    <div id="customAlertModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-white shadow-2xl text-center">
-            <div id="customAlertTitle" class="text-xl font-bold text-amber-400 mb-2">⚠️ 알림</div>
-            <div id="customAlertMessage" class="text-sm text-slate-300 mb-6 leading-relaxed whitespace-pre-line">메시지 내용</div>
-            <button onclick="closeCustomAlert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition">
+    <div id="customAlertModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 text-left">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-white shadow-2xl">
+            <div id="customAlertTitle" class="text-xl font-bold text-amber-400 mb-2 flex items-center gap-2">
+                <span>⚠️</span> <span>알림</span>
+            </div>
+            <div id="customAlertMessage" class="text-sm text-slate-300 mb-6 leading-relaxed whitespace-pre-line break-keep">메시지 내용</div>
+            <button onclick="closeCustomAlert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition text-center">
                 확인
             </button>
         </div>
@@ -243,8 +246,8 @@
 
         // Custom Modal Alert System
         function showAlert(title, message) {
-            customAlertTitle.textContent = title || "알림";
-            customAlertMessage.textContent = message;
+            customAlertTitle.innerHTML = `<span>⚠️</span> <span>${title || "알림"}</span>`;
+            customAlertMessage.innerHTML = message.replace(/\n/g, '<br>');
             customAlertModal.classList.remove('hidden');
         }
 
@@ -260,7 +263,7 @@
             const slideUrl = document.getElementById('slideUrl').value.trim();
 
             if (!grade || !classNum || !studentNum || !name || !slideUrl) {
-                showAlert("⚠️ 정보 입력 누락", "학년, 반, 번호, 이름 및 구글 슬라이드 링크를 모두 정확히 입력해 주세요.");
+                showAlert("정보 입력 누락", "학년, 반, 번호, 이름 및 구글 슬라이드 링크를 모두 정확히 입력해 주세요.");
                 return;
             }
 
@@ -289,17 +292,19 @@
 
             // 0. 보안 프로토콜 (HTTPS) 체크
             if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-                showAlert("🔒 보안 프로토콜 오류", "카메라 및 화면 공유 기능은 보안 웹주소(https://)에서만 작동합니다.\n\nGitHub Pages 주소로 접속했는지 확인해 주세요.");
-                return;
-            }
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showAlert("🔒 보안 오류", "브라우저가 카메라/마이크 접근 API를 지원하지 않거나 허용되지 않았습니다.");
+                if (location.protocol === 'file:') {
+                    showAlert("로컬 파일 실행 오류", "브라우저 보안 정책으로 인해 내 컴퓨터에서 파일(file:///)을 직접 열면 화면 공유를 사용할 수 없습니다.\n\nGitHub Pages 등 웹 서버에 올려서 접속해 주세요.");
+                } else {
+                    showAlert("🔒 보안 프로토콜 오류", "카메라 및 화면 공유 기능은 보안 웹주소(https://)에서만 작동합니다.\n\nGitHub Pages 주소로 접속했는지 확인해 주세요.");
+                }
                 return;
             }
 
             // 1. 카메라 권한 요청
             try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("API Not Supported");
+                }
                 cameraStream = await navigator.mediaDevices.getUserMedia({ 
                     video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, 
                     audio: true 
@@ -310,24 +315,21 @@
                 noCameraText.classList.add('hidden');
             } catch (err) {
                 console.error("Camera access error:", err);
-                showAlert("📷 카메라 접근 실패", "카메라/마이크 권한이 거부되었습니다.\n브라우저 주소창 좌측의 자물쇠/설정 아이콘을 눌러 카메라 권한을 '허용'해 주세요.");
+                showAlert("📷 카메라 접근 실패", "카메라/마이크 권한을 가져오는데 실패했습니다.\n\n브라우저 주소창 좌측의 자물쇠 아이콘을 눌러 카메라 및 마이크 권한을 '허용'으로 변경 후 새로고침해 주세요.");
                 return;
             }
 
-            // 2. 화면 공유 요청 (크롬 getDisplayMedia 최상위 옵션 올바르게 적용)
+            // 2. 화면 공유 요청 (크롬 getDisplayMedia)
             isTabletFallback = false;
             let screenShareSuccess = false;
 
             if (navigator.mediaDevices.getDisplayMedia) {
                 try {
-                    // 크롬 API 규격: selfBrowserSurface 및 preferCurrentTab 옵션을 최상위에 배치해야 현재 탭이 목록에 정상 표시됨
                     const displayMediaConstraints = {
-                        video: { 
-                            displaySurface: "browser"
-                        }, 
+                        video: { displaySurface: "browser" }, 
                         audio: false,
-                        selfBrowserSurface: "include", // 현재 탭 포함 옵션 (최상위 위치)
-                        preferCurrentTab: true,        // 현재 탭 우선 권장 (최상위 위치)
+                        selfBrowserSurface: "include", // 현재 탭 포함 (Chrome)
+                        preferCurrentTab: true,        
                         surfaceSwitching: "include"
                     };
 
@@ -344,22 +346,55 @@
                     if (isRecording) stopRecording();
                 };
                 screenVideo.play().catch(err => console.log("Screen video play error:", err));
+                
+                recordingStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                recordingStatusText.textContent = "촬영 준비 완료";
+                btnStart.disabled = false;
+                btnStart.classList.remove('bg-slate-700', 'text-slate-400', 'cursor-not-allowed');
+                btnStart.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'active:bg-emerald-800', 'text-white', 'shadow-lg');
             } else {
-                // 태블릿 또는 화면 공유 미지원/취소 기기 모드
+                // 모바일/태블릿 등 화면 공유 실패 시의 Fallback 경고창 (중요 변경점)
                 isTabletFallback = true;
-                showAlert("📱 안내", "화면 공유가 선택되지 않았거나 지원되지 않는 기기 환경입니다.\n\n우측 웹캠 카메라 및 학생 정보를 기반으로 발표 녹화가 진행됩니다.");
+                
+                // 임시 가짜 스트림 생성 (에러 방지용)
+                const mockCanvas = document.createElement('canvas');
+                mockCanvas.width = 1280; mockCanvas.height = 720;
+                const mCtx = mockCanvas.getContext('2d');
+                const drawMock = () => {
+                    mCtx.fillStyle = '#1e293b'; 
+                    mCtx.fillRect(0, 0, 1280, 720);
+                    mCtx.fillStyle = '#cbd5e1'; 
+                    mCtx.font = 'bold 40px "Noto Sans KR", sans-serif';
+                    mCtx.textAlign = 'center';
+                    mCtx.fillText('모바일/태블릿 화면 캡처 불가', 640, 320);
+                    mCtx.font = '24px "Noto Sans KR", sans-serif';
+                    mCtx.fillStyle = '#94a3b8';
+                    mCtx.fillText('브라우저 정책상 구글 슬라이드를 직접 캡처할 수 없습니다.', 640, 380);
+                    requestAnimationFrame(drawMock);
+                };
+                drawMock();
+                screenStream = mockCanvas.captureStream(30);
+                screenVideo.srcObject = screenStream;
+                screenVideo.play().catch(e => console.log("Mock video play error:", e));
+
+                // 사용자에게 명확히 안내
+                showAlert(
+                    "📱 모바일 및 태블릿 기기 제한 안내", 
+                    "현재 사용 중인 태블릿이나 스마트폰 환경에서는 브라우저 보안 정책상 화면 공유 기능을 통해 구글 슬라이드를 영상에 합성하는 것이 불가능합니다.\n\n<strong style='color:#60a5fa;'>💡 해결 방법 2가지:</strong>\n1. 가급적 노트북이나 데스크탑 PC 크롬 브라우저를 이용해 주세요. (권장)\n\n2. 현재 기기를 꼭 써야 한다면, 이 웹페이지의 녹화 버튼을 누르지 마시고 <strong>기기 자체에 내장된 '화면 녹화(Screen Recorder)' 기능</strong>을 켜서 화면에 보이는 전체를 스스로 녹화하셔야 합니다."
+                );
+
+                // 상태 업데이트 (카메라만 기록됨을 알림)
+                recordingStatusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+                recordingStatusText.textContent = "주의: 카메라 단독 모드";
+                
+                // 버튼은 열어주되, 주의를 줌
+                btnStart.disabled = false;
+                btnStart.classList.remove('bg-slate-700', 'text-slate-400', 'cursor-not-allowed');
+                btnStart.classList.add('bg-amber-600', 'hover:bg-amber-700', 'active:bg-amber-800', 'text-white', 'shadow-lg');
+                btnStart.innerHTML = "<span>▶️</span> <span>발표 시작하기 (카메라만 녹화됨)</span>";
             }
 
-            // UI 상태 업데이트
-            recordingStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-            recordingStatusText.textContent = isTabletFallback ? "촬영 준비 완료 (카메라 모드)" : "촬영 준비 완료";
             btnConnect.classList.add('hidden');
-            
-            btnStart.disabled = false;
-            btnStart.classList.remove('bg-slate-700', 'text-slate-400', 'cursor-not-allowed');
-            btnStart.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'active:bg-emerald-800', 'text-white', 'shadow-lg');
-
-            // 캔버스 믹싱 프레임 루프 시작
             startMixing();
         }
 
@@ -370,31 +405,17 @@
             ctx.fillStyle = '#0f172a'; // slate-900
             ctx.fillRect(0, 0, 1280, 720);
 
-            if (!isTabletFallback && screenVideo.readyState >= 2 && screenVideo.videoWidth > 0) {
-                // [일반 PC/노트북 모드] 화면 공유 스트림 랜더링 (왼쪽 960x720)
+            if (screenVideo.readyState >= 2 && screenVideo.videoWidth > 0) {
+                // 화면 공유 비디오 랜더링 (전체화면 공유든 크롬탭 공유든 비율을 맞춰 왼쪽에 그리기)
                 const sWidth = screenVideo.videoWidth;
                 const sHeight = screenVideo.videoHeight;
                 
-                // 오른쪽 25% 컨트롤 영역을 제외한 슬라이드 주요 영역 크롭
+                // 크롬 탭 선택 시 우측 컨트롤러 부분(25%)을 크롭하여 슬라이드 75%만 꽉 차게 그리기
                 let cropW = sWidth;
-                if (sWidth / sHeight > 1.5) {
+                if (sWidth / sHeight > 1.5 && sWidth > 1000) { 
                     cropW = sWidth * 0.75;
                 }
-
                 ctx.drawImage(screenVideo, 0, 0, cropW, sHeight, 0, 0, 960, 720);
-            } else {
-                // [태블릿 Fallback 모드] 슬라이드 안내 박스 랜더링
-                ctx.fillStyle = '#1e293b';
-                ctx.fillRect(20, 20, 920, 680);
-                
-                ctx.fillStyle = '#60a5fa';
-                ctx.font = 'bold 32px "Noto Sans KR"';
-                ctx.textAlign = 'center';
-                ctx.fillText('⚛️ 물리 영역 보고서 발표', 480, 320);
-                
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '22px "Noto Sans KR"';
-                ctx.fillText('구글 슬라이드를 보며 우측 카메라를 보고 발표하세요', 480, 380);
             }
             
             // 구분 세로선
@@ -412,7 +433,25 @@
                 ctx.beginPath();
                 ctx.roundRect(camX, camY, camW, camH, 12);
                 ctx.clip();
-                ctx.drawImage(cameraVideo, camX, camY, camW, camH);
+                
+                // 카메라 좌우 반전 처리 방지 및 꽉 차게 렌더링
+                const vRatio = cameraVideo.videoWidth / cameraVideo.videoHeight;
+                const cRatio = camW / camH;
+                let drawW, drawH, drawX, drawY;
+                
+                if (vRatio > cRatio) {
+                    drawH = camH;
+                    drawW = cameraVideo.videoWidth * (camH / cameraVideo.videoHeight);
+                    drawX = camX - (drawW - camW) / 2;
+                    drawY = camY;
+                } else {
+                    drawW = camW;
+                    drawH = cameraVideo.videoHeight * (camW / cameraVideo.videoWidth);
+                    drawX = camX;
+                    drawY = camY - (drawH - camH) / 2;
+                }
+
+                ctx.drawImage(cameraVideo, drawX, drawY, drawW, drawH);
                 
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = '#475569';
@@ -455,7 +494,7 @@
 
         function startRecording() {
             if (!cameraStream) {
-                showAlert("⚠️ 연결 필요", "카메라 연결이 완료되지 않았습니다.");
+                showAlert("연결 필요", "카메라 연결이 완료되지 않았습니다.");
                 return;
             }
 
@@ -464,7 +503,6 @@
             
             const canvasStream = compositeCanvas.captureStream(30);
             
-            // 오디오 트랙 믹싱
             if (cameraStream.getAudioTracks().length > 0) {
                 canvasStream.addTrack(cameraStream.getAudioTracks()[0]);
             }
