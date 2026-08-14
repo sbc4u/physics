@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>물리 발표 촬영 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -101,15 +105,28 @@
         <!-- 왼쪽/상단: 구글 슬라이드 프리뷰 영역 -->
         <div class="w-full lg:w-3/4 h-[55dvh] lg:h-full flex flex-col justify-between p-3 sm:p-5 relative border-b lg:border-b-0 lg:border-r border-slate-800">
             <!-- 슬라이드 Iframe 컨테이너 -->
-            <div class="w-full flex-1 flex flex-col justify-center items-center min-h-0">
+            <div class="w-full flex-1 flex flex-col justify-center items-center min-h-0 relative group">
                 <div class="w-full h-full max-h-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black relative ring-1 ring-slate-700 flex items-center justify-center">
                     <iframe id="slideIframe" class="w-full h-full border-0" allowfullscreen></iframe>
+                    <!-- PDF Canvas (기본 숨김) -->
+                    <canvas id="pdfCanvas" class="hidden w-full h-full object-contain"></canvas>
+                </div>
+                
+                <!-- PDF 컨트롤러 (호버 시 표시) -->
+                <div id="pdfControls" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-slate-900/90 px-5 py-2.5 rounded-full border border-slate-600 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 hover:opacity-100">
+                    <button onclick="prevPdfPage()" class="p-2 bg-slate-700 hover:bg-slate-600 active:scale-95 rounded-full text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <span class="text-sm font-medium text-white min-w-[3rem] text-center"><span id="pdfCurrentPage">1</span> / <span id="pdfTotalPages">1</span></span>
+                    <button onclick="nextPdfPage()" class="p-2 bg-slate-700 hover:bg-slate-600 active:scale-95 rounded-full text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
                 </div>
             </div>
             <!-- 하단 슬라이드 조작 안내 -->
             <div class="mt-2 text-center text-slate-400 text-xs sm:text-sm flex items-center justify-center gap-1.5 shrink-0 py-1 bg-slate-800/60 rounded-lg">
                 <span class="text-base">💡</span>
-                <span>마우스로 슬라이드 하단의 <b>화살표 메뉴</b>를 누르거나, 클릭 후 키보드 <b>방향키(◀ ▶)</b>를 눌러 넘기세요.</span>
+                <span>화면에 마우스를 올리면 <b>하단에 컨트롤러</b>가 나타납니다. 키보드 <b>방향키(◀ ▶)</b>로도 넘길 수 있습니다.</span>
             </div>
         </div>
 
@@ -190,9 +207,8 @@
             
             <div class="bg-slate-700 p-4 rounded-xl mb-5 border border-slate-600 space-y-3">
                 <ol class="list-decimal list-inside text-sm sm:text-base text-slate-200 font-medium space-y-2 break-keep">
-                    <li>팝업창 위쪽 탭에서 <b>[Chrome 탭]</b> 또는 <b>[전체 화면]</b>을 선택합니다.</li>
-                    <li>목록에서 현재 실행 중인 <b>발표 시스템 창</b>을 찾아 클릭합니다.</li>
-                    <li>오른쪽 아래 파란색 <b>[공유]</b> 버튼을 누릅니다.</li>
+                    <li>버튼을 누르면 화면 상단에 <b>[이 탭을 보도록 허용하시겠습니까?]</b> 라는 팝업창이 뜹니다.</li>
+                    <li>팝업창 오른쪽 아래의 파란색 <b>[허용]</b> 버튼을 누릅니다.</li>
                 </ol>
             </div>
             
@@ -303,6 +319,9 @@
         const setupScreen = document.getElementById('setupScreen');
         const recordingScreen = document.getElementById('recordingScreen');
         const slideIframe = document.getElementById('slideIframe');
+        const pdfCanvas = document.getElementById('pdfCanvas');
+        const pdfControls = document.getElementById('pdfControls');
+        const pdfCtx = pdfCanvas ? pdfCanvas.getContext('2d') : null;
         
         const previewCamera = document.getElementById('previewCamera');
         const noCameraText = document.getElementById('noCameraText');
@@ -343,6 +362,11 @@
         let isTabletFallback = false;
         let timeLeft = 180;
         let timerInterval = null;
+
+        // PDF 관련 변수
+        let pdfDoc = null;
+        let pdfCurrentPageNum = 1;
+        let isPdfMode = false;
 
         // --- Settings Management (Local Storage) ---
         const defaultSettings = {
@@ -449,6 +473,71 @@
             customAlertModal.classList.add('hidden');
         }
 
+        // --- PDF Rendering Logic ---
+        async function loadPdf(file) {
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                try {
+                    pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
+                    document.getElementById('pdfTotalPages').textContent = pdfDoc.numPages;
+                    pdfCurrentPageNum = 1;
+                    renderPdfPage(pdfCurrentPageNum);
+                    
+                    // UI 스위칭
+                    slideIframe.classList.add('hidden');
+                    pdfCanvas.classList.remove('hidden');
+                    pdfControls.classList.remove('hidden');
+                    isPdfMode = true;
+                    
+                    window.addEventListener('keydown', handlePdfKeyDown);
+                } catch (error) {
+                    console.error("PDF Load Error:", error);
+                    showAlert("PDF 로드 오류", "PDF 파일을 여는 데 실패했습니다.");
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        async function renderPdfPage(num) {
+            if (!pdfDoc) return;
+            const page = await pdfDoc.getPage(num);
+            
+            // 고해상도 렌더링을 위해 스케일 업
+            const viewport = page.getViewport({ scale: 2.0 }); 
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            
+            const renderContext = {
+                canvasContext: pdfCtx,
+                viewport: viewport
+            };
+            await page.render(renderContext).promise;
+            document.getElementById('pdfCurrentPage').textContent = num;
+        }
+
+        function prevPdfPage() {
+            if (pdfCurrentPageNum <= 1) return;
+            pdfCurrentPageNum--;
+            renderPdfPage(pdfCurrentPageNum);
+        }
+
+        function nextPdfPage() {
+            if (pdfCurrentPageNum >= pdfDoc.numPages) return;
+            pdfCurrentPageNum++;
+            renderPdfPage(pdfCurrentPageNum);
+        }
+
+        function handlePdfKeyDown(e) {
+            if (!isPdfMode) return;
+            if (e.key === 'ArrowLeft') {
+                prevPdfPage();
+            } else if (e.key === 'ArrowRight' || e.key === ' ') {
+                if(e.key === ' ' && e.target === document.body) e.preventDefault(); // 스페이스바 스크롤 방지
+                nextPdfPage();
+            }
+        }
+
         function startSetup() {
             const grade = document.getElementById('grade').value.trim();
             const classNum = document.getElementById('classNum').value.trim();
@@ -476,8 +565,7 @@
                     showAlert("파일 형식 오류", "원활한 시스템 동작을 위해 PDF 파일만 업로드 가능합니다.\n(PPT나 한글 등은 PDF로 저장하여 업로드해주세요)");
                     return;
                 }
-                const fileUrl = URL.createObjectURL(localFile);
-                slideIframe.src = fileUrl + "#toolbar=0&navpanes=0&scrollbar=0"; 
+                loadPdf(localFile);
             } else {
                 let embedUrl = slideUrl;
                 if (slideUrl.includes('docs.google.com/presentation')) {
@@ -486,6 +574,13 @@
                     embedUrl = 'https://' + slideUrl;
                 }
                 slideIframe.src = embedUrl;
+                
+                // UI 스위칭
+                slideIframe.classList.remove('hidden');
+                pdfCanvas.classList.add('hidden');
+                pdfControls.classList.add('hidden');
+                isPdfMode = false;
+                window.removeEventListener('keydown', handlePdfKeyDown);
             }
 
             setupScreen.classList.add('hidden');
